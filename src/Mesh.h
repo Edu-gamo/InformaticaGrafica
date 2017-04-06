@@ -2,6 +2,7 @@
 #include <GL\glew.h>
 #include <vector>
 #include <glm.hpp>
+#include <assimp\Importer.hpp>
 #include "Shader.h"
 
 using namespace std;

@@ -13,6 +13,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "Model.h"
 
 using namespace glm;
 using namespace std;
@@ -23,6 +24,8 @@ float rotationY = 0.0f;
 float rotationX = 0.0f;
 float autoRotation = false;
 Camera myCamera;
+
+Model model1;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
@@ -84,11 +87,14 @@ int main() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.0, 1.0, 1.0, 1.0);
 
+	glCullFace(GL_FRONT_AND_BACK);
+	glFrontFace(GL_CCW);
+
 	//cargamos los shader
 	Shader myShader = Shader("./src/3DVertex.vertexshader", "./src/3DFragment.fragmentshader");
 
 	// Definir el buffer de vertices
-	GLfloat VertexBufferCube[] = {
+	/*GLfloat VertexBufferCube[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 		0.5f , -0.5f, -0.5f,  1.0f, 0.0f,
 		0.5f ,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -224,7 +230,7 @@ int main() {
 	SOIL_free_image_data(image);
 
 	//Liberar puntero de textura
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);*/
 
 	//Matriz Projection
 	float aspectRatio = screenWidth / screenHeight;
@@ -237,6 +243,9 @@ int main() {
 	vec3 cameraTarget = vec3(0.0f, 0.0f, 0.0f);
 	vec3 cameraDir = normalize(cPos - cameraTarget);
 	myCamera = Camera(cPos, cameraDir, 0.05f, 60.0f, 3.0f);
+
+	model1 = Model("./src/models/spider/spider.obj");
+	//model1 = Model("./src/models/car/Porsche_911_GT2.obj");
 
 	//Bloquear cursor a la ventana
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -251,15 +260,15 @@ int main() {
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glClearColor(0.0, 0.0, 0.0, 1.0);
+		glClearColor(1.0, 1.0, 1.0, 1.0);
 
-		glActiveTexture(GL_TEXTURE0);
+		/*glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
 		glUniform1i(glGetUniformLocation(myShader.Program, "Texture1"), 0);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glUniform1i(glGetUniformLocation(myShader.Program, "Texture2"), 1);
-		glUniform1f(glGetUniformLocation(myShader.Program, "textureChange"), textureChange);
+		glUniform1f(glGetUniformLocation(myShader.Program, "textureChange"), textureChange);*/
 
 		proj = perspective(radians(myCamera.GetFOV()), aspectRatio, 0.1f, 100.0f);
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "proj"), 1, GL_FALSE, value_ptr(proj));
@@ -269,8 +278,10 @@ int main() {
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "view"), 1, GL_FALSE, value_ptr(myCamera.LookAt()));
 
 		myShader.USE();
+		mat4 model = GenerateModelMatrix(vec3(1.0f), vec3(0.0f), vec3(0.0f));
+		model1.Draw(myShader, GL_FILL);
 
-		mat4 model = GenerateModelMatrix(vec3(1.0f), vec3(rotationX, rotationY, 0.0f), CubesPositionBuffer[0]);
+		/*mat4 model = GenerateModelMatrix(vec3(1.0f), vec3(rotationX, rotationY, 0.0f), CubesPositionBuffer[0]);
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(model));
 		printVAO(VAO);
 
@@ -278,14 +289,14 @@ int main() {
 			mat4 model = GenerateModelMatrix(vec3(1.0f), vec3(glfwGetTime() * 100, glfwGetTime() * 100, 0.0f), CubesPositionBuffer[i]);
 			glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(model));
 			printVAO(VAO);
-		}
+		}*/
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
 	// liberar la memoria de los VAO, EBO y VBO
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	/*glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);*/
 	//glDeleteBuffers(1, &EBO);
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
