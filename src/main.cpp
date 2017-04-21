@@ -25,7 +25,8 @@ float rotationX = 0.0f;
 float autoRotation = false;
 Camera myCamera;
 
-Model model1;
+Model model1, model2, model3;
+int modelNum = 0;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
@@ -88,7 +89,7 @@ int main() {
 	glClearColor(0.0, 1.0, 1.0, 1.0);
 
 	glCullFace(GL_FRONT_AND_BACK);
-	glFrontFace(GL_CCW);
+	glFrontFace(GL_CW);
 
 	//cargamos los shader
 	Shader myShader = Shader("./src/3DVertex.vertexshader", "./src/3DFragment.fragmentshader");
@@ -245,7 +246,8 @@ int main() {
 	myCamera = Camera(cPos, cameraDir, 0.05f, 60.0f, 3.0f);
 
 	model1 = Model("./src/models/spider/spider.obj");
-	//model1 = Model("./src/models/car/Porsche_911_GT2.obj");
+	model2 = Model("./src/models/nanosuit/nanosuit.obj");
+	model3 = Model("./src/models/car/Porsche_911_GT2.obj");
 
 	//Bloquear cursor a la ventana
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -278,8 +280,19 @@ int main() {
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "view"), 1, GL_FALSE, value_ptr(myCamera.LookAt()));
 
 		myShader.USE();
-		mat4 model = GenerateModelMatrix(vec3(1.0f), vec3(0.0f), vec3(0.0f));
-		model1.Draw(myShader, GL_FILL);
+		if (modelNum == 0) {
+			mat4 model = GenerateModelMatrix(vec3(0.25f), vec3(0.0f), vec3(0.0f));
+			glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(model));
+			model1.Draw(myShader, GL_FILL);
+		} else if (modelNum == 1) {
+			mat4 model = GenerateModelMatrix(vec3(0.5f), vec3(0.0f), vec3(0.0f));
+			glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(model));
+			model2.Draw(myShader, GL_FILL);
+		} else if (modelNum == 2) {
+			mat4 model = GenerateModelMatrix(vec3(1.0f), vec3(0.0f), vec3(0.0f));
+			glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(model));
+			model3.Draw(myShader, GL_FILL);
+		}
 
 		/*mat4 model = GenerateModelMatrix(vec3(1.0f), vec3(rotationX, rotationY, 0.0f), CubesPositionBuffer[0]);
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(model));
@@ -312,8 +325,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	//if (key == GLFW_KEY_W && action == GLFW_PRESS) WIDEFRAME = !WIDEFRAME;
 
 	//Cambio de textura
-	if (key == GLFW_KEY_1 && (action == GLFW_PRESS || action == GLFW_REPEAT)) if (textureChange < 1.0f) textureChange += 0.1f;
-	if (key == GLFW_KEY_2 && (action == GLFW_PRESS || action == GLFW_REPEAT)) if (textureChange > 0.0f) textureChange -= 0.1f;
+	/*if (key == GLFW_KEY_1 && (action == GLFW_PRESS || action == GLFW_REPEAT)) if (textureChange < 1.0f) textureChange += 0.1f;
+	if (key == GLFW_KEY_2 && (action == GLFW_PRESS || action == GLFW_REPEAT)) if (textureChange > 0.0f) textureChange -= 0.1f;*/
+
+	//Cambio de modelo
+	if (key == GLFW_KEY_1 && action == GLFW_PRESS) modelNum = 0;
+	if (key == GLFW_KEY_2 && action == GLFW_PRESS) modelNum = 1;
+	if (key == GLFW_KEY_3 && action == GLFW_PRESS) modelNum = 2;
 
 	//Rotacion del cubo
 	if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationX -= 1.0f;
