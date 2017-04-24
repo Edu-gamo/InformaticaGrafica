@@ -16,9 +16,9 @@ void main(){
 
 	gl_Position = proj * view * matriz * vec4(position, 1.0);
 
-    vertexColor = vec3(0.0, 0.0, 1.0);
+    vertexColor = vec3(1.0, 0.0, 0.0);
 	
-	Normal = normal;
+	Normal = mat3(transpose(inverse(matriz))) * normal;
 	
 	FragPos = vec3(matriz * vec4(position, 1.0f));
 

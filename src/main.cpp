@@ -13,7 +13,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
-#include "Model.h"
+//#include "Model.h"
 #include "Object.h"
 
 using namespace glm;
@@ -28,7 +28,7 @@ float traslationX = 0.0f;
 float autoRotation = false;
 Camera myCamera;
 
-Model model1, model2, model3;
+//Model model1, model2, model3;
 int modelNum = 0;
 
 Object cube1, cube2;
@@ -251,9 +251,9 @@ int main() {
 	vec3 cameraDir = normalize(cPos - cameraTarget);
 	myCamera = Camera(cPos, cameraDir, 0.05f, 60.0f, 3.0f);
 
-	model1 = Model("./src/models/spider/spider.obj");
+	/*model1 = Model("./src/models/spider/spider.obj");
 	model2 = Model("./src/models/nanosuit/nanosuit.obj");
-	model3 = Model("./src/models/car/Porsche_911_GT2.obj");
+	model3 = Model("./src/models/car/Porsche_911_GT2.obj");*/
 
 	cube1 = Object(vec3(1.0f), vec3(0.0f), vec3(0.0f), Object::cube);
 	traslationX = cube1.GetPosition().x;
@@ -295,7 +295,8 @@ int main() {
 		cube1.Move(vec3(traslationX, traslationY, 0.0f));
 		cube1.Rotate(vec3(rotationX, rotationY, 0.0f));
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(cube1.GetModelMatrix()));
-		glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), 1, GL_FALSE, (cube2.GetPosition().x, cube2.GetPosition().y, cube2.GetPosition().z));
+		glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), cube2.GetPosition().x, cube2.GetPosition().y, cube2.GetPosition().z);
+		glUniform3f(glGetUniformLocation(myShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
 		cube1.Draw();
 
 		myShader2.USE();
