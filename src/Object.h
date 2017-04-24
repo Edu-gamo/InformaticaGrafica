@@ -12,6 +12,7 @@ public:
 		cube = 0,
 	};
 
+	Object();
 	Object(vec3 scale, vec3 rotation, vec3 position, FigureType typef);
 	~Object();
 

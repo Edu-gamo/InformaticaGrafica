@@ -14,6 +14,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Model.h"
+#include "Object.h"
 
 using namespace glm;
 using namespace std;
@@ -22,11 +23,15 @@ bool WIDEFRAME = false;
 float textureChange = 0.0f;
 float rotationY = 0.0f;
 float rotationX = 0.0f;
+float traslationY = 0.0f;
+float traslationX = 0.0f;
 float autoRotation = false;
 Camera myCamera;
 
 Model model1, model2, model3;
 int modelNum = 0;
+
+Object cube1, cube2;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
@@ -92,7 +97,8 @@ int main() {
 	glFrontFace(GL_CW);
 
 	//cargamos los shader
-	Shader myShader = Shader("./src/3DVertex.vertexshader", "./src/3DFragment.fragmentshader");
+	Shader myShader = Shader("./src/PhongVertex.vertexshader", "./src/PhongFragment.fragmentshader");
+	Shader myShader2 = Shader("./src/SimpleCubeVertex.vertexshader", "./src/SimpleCubeFragment.fragmentshader");
 
 	// Definir el buffer de vertices
 	/*GLfloat VertexBufferCube[] = {
@@ -249,6 +255,12 @@ int main() {
 	model2 = Model("./src/models/nanosuit/nanosuit.obj");
 	model3 = Model("./src/models/car/Porsche_911_GT2.obj");
 
+	cube1 = Object(vec3(1.0f), vec3(0.0f), vec3(0.0f), Object::cube);
+	traslationX = cube1.GetPosition().x;
+	traslationY = cube1.GetPosition().y;
+
+	cube2 = Object(vec3(0.1f), vec3(0.0f), vec3(0.0f), Object::cube);
+
 	//Bloquear cursor a la ventana
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -262,7 +274,7 @@ int main() {
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glClearColor(1.0, 1.0, 1.0, 1.0);
+		glClearColor(0.0, 0.0, 0.0, 1.0);
 
 		/*glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
@@ -272,6 +284,7 @@ int main() {
 		glUniform1i(glGetUniformLocation(myShader.Program, "Texture2"), 1);
 		glUniform1f(glGetUniformLocation(myShader.Program, "textureChange"), textureChange);*/
 
+		myShader.USE();
 		proj = perspective(radians(myCamera.GetFOV()), aspectRatio, 0.1f, 100.0f);
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "proj"), 1, GL_FALSE, value_ptr(proj));
 
@@ -279,8 +292,18 @@ int main() {
 		myCamera.DoMovement(window);
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "view"), 1, GL_FALSE, value_ptr(myCamera.LookAt()));
 
-		myShader.USE();
-		if (modelNum == 0) {
+		cube1.Move(vec3(traslationX, traslationY, 0.0f));
+		cube1.Rotate(vec3(rotationX, rotationY, 0.0f));
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(cube1.GetModelMatrix()));
+		glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), 1, GL_FALSE, (cube2.GetPosition().x, cube2.GetPosition().y, cube2.GetPosition().z));
+		cube1.Draw();
+
+		myShader2.USE();
+		glUniformMatrix4fv(glGetUniformLocation(myShader2.Program, "proj"), 1, GL_FALSE, value_ptr(proj));
+		glUniformMatrix4fv(glGetUniformLocation(myShader2.Program, "view"), 1, GL_FALSE, value_ptr(myCamera.LookAt()));
+		glUniformMatrix4fv(glGetUniformLocation(myShader2.Program, "matriz"), 1, GL_FALSE, value_ptr(cube2.GetModelMatrix()));
+		cube2.Draw();
+		/*if (modelNum == 0) {
 			mat4 model = GenerateModelMatrix(vec3(0.25f), vec3(0.0f), vec3(0.0f));
 			glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(model));
 			model1.Draw(myShader, GL_FILL);
@@ -292,7 +315,7 @@ int main() {
 			mat4 model = GenerateModelMatrix(vec3(1.0f), vec3(0.0f), vec3(0.0f));
 			glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(model));
 			model3.Draw(myShader, GL_FILL);
-		}
+		}*/
 
 		/*mat4 model = GenerateModelMatrix(vec3(1.0f), vec3(rotationX, rotationY, 0.0f), CubesPositionBuffer[0]);
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(model));
@@ -333,12 +356,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_2 && action == GLFW_PRESS) modelNum = 1;
 	if (key == GLFW_KEY_3 && action == GLFW_PRESS) modelNum = 2;
 
+	//Trasladar cubo
+	if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) traslationY += 0.1f;
+	if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) traslationY -= 0.1f;
+	if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) traslationX += 0.1f;
+	if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) traslationX -= 0.1f;
+
 	//Rotacion del cubo
-	if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationX -= 1.0f;
+	if (key == GLFW_KEY_KP_8 && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationX -= 1.0f;
+	if (key == GLFW_KEY_KP_2 && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationX += 1.0f;
+	if (key == GLFW_KEY_KP_6 && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationY += 1.0f;
+	if (key == GLFW_KEY_KP_4 && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationY -= 1.0f;
+
+	/*if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationX -= 1.0f;
 	if (key == GLFW_KEY_DOWN && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationX += 1.0f;
 	if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationY -= 1.0f;
 	if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) rotationY += 1.0f;
-	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) autoRotation = !autoRotation;
+	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) autoRotation = !autoRotation;*/
 }
 
 void printVAO(GLuint VAO) {
