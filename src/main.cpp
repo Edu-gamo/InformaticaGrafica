@@ -97,7 +97,9 @@ int main() {
 	glFrontFace(GL_CW);
 
 	//cargamos los shader
-	Shader myShader = Shader("./src/PuntualVertex.vertexshader", "./src/PuntualFragment.fragmentshader");
+	//Shader myShader = Shader("./src/DirectionalVertex.vertexshader", "./src/DirectionalFragment.fragmentshader");
+	//Shader myShader = Shader("./src/PuntualVertex.vertexshader", "./src/PuntualFragment.fragmentshader");
+	Shader myShader = Shader("./src/FocalVertex.vertexshader", "./src/FocalFragment.fragmentshader");
 	Shader myShader2 = Shader("./src/SimpleCubeVertex.vertexshader", "./src/SimpleCubeFragment.fragmentshader");
 
 	// Definir el buffer de vertices
@@ -259,7 +261,8 @@ int main() {
 	traslationX = cube1.GetPosition().x;
 	traslationY = cube1.GetPosition().y;
 
-	cube2 = Object(vec3(0.1f), vec3(0.0f), vec3(-1.0f, 0.0f, 1.0f), Object::cube);
+	//cube2 = Object(vec3(0.1f), vec3(0.0f), vec3(-1.0f, 0.0f, 1.5f), Object::cube);
+	cube2 = Object(vec3(0.1f), vec3(0.0f), vec3(0.0f, 2.0f, 0.0f), Object::cube);
 
 	//Bloquear cursor a la ventana
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -296,10 +299,15 @@ int main() {
 		cube1.Rotate(vec3(rotationX, rotationY, 0.0f));
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(cube1.GetModelMatrix()));
 		glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), cube2.GetPosition().x, cube2.GetPosition().y, cube2.GetPosition().z);
-		/*vec3 lightDir = vec3(1.0f, -1.0f, -1.0f);
-		glUniform3f(glGetUniformLocation(myShader.Program, "lightDir"), lightDir.x, lightDir.y, lightDir.z);*/
+		//vec3 lightDir = vec3(1.0f, -1.0f, -1.0f);
+		vec3 lightDir = vec3(0.0f) - cube2.GetPosition();
+		glUniform3f(glGetUniformLocation(myShader.Program, "lightDir"), lightDir.x, lightDir.y, lightDir.z);
 		vec3 attenuation = vec3(1.0, 0.7, 1.8);
 		glUniform3f(glGetUniformLocation(myShader.Program, "attenuation"), attenuation.x, attenuation.y, attenuation.z);
+		float aperturaMax = cos(radians(17.5f));
+		float aperturaMin = cos(radians(12.5f));
+		glUniform1f(glGetUniformLocation(myShader.Program, "aperturaMax"), aperturaMax);
+		glUniform1f(glGetUniformLocation(myShader.Program, "aperturaMin"), aperturaMin);
 		glUniform3f(glGetUniformLocation(myShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
 		cube1.Draw();
 
