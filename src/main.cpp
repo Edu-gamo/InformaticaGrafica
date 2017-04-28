@@ -299,13 +299,13 @@ int main() {
 		cube1.Rotate(vec3(rotationX, rotationY, 0.0f));
 		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(cube1.GetModelMatrix()));
 		glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), cube2.GetPosition().x, cube2.GetPosition().y, cube2.GetPosition().z);
-		//vec3 lightDir = vec3(1.0f, -1.0f, -1.0f);
-		vec3 lightDir = vec3(0.0f) - cube2.GetPosition();
+		vec3 lightDir = vec3(0.0f, -1.0f, 0.0f);
+		//vec3 lightDir = vec3(0.0f) - cube2.GetPosition();
 		glUniform3f(glGetUniformLocation(myShader.Program, "lightDir"), lightDir.x, lightDir.y, lightDir.z);
 		vec3 attenuation = vec3(1.0, 0.7, 1.8);
 		glUniform3f(glGetUniformLocation(myShader.Program, "attenuation"), attenuation.x, attenuation.y, attenuation.z);
-		float aperturaMax = cos(radians(17.5f));
-		float aperturaMin = cos(radians(12.5f));
+		float aperturaMax = cos(radians(15.0f));
+		float aperturaMin = cos(radians(10.0f));
 		glUniform1f(glGetUniformLocation(myShader.Program, "aperturaMax"), aperturaMax);
 		glUniform1f(glGetUniformLocation(myShader.Program, "aperturaMin"), aperturaMin);
 		glUniform3f(glGetUniformLocation(myShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
@@ -366,9 +366,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_2 && (action == GLFW_PRESS || action == GLFW_REPEAT)) if (textureChange > 0.0f) textureChange -= 0.1f;*/
 
 	//Cambio de modelo
-	if (key == GLFW_KEY_1 && action == GLFW_PRESS) modelNum = 0;
+	/*if (key == GLFW_KEY_1 && action == GLFW_PRESS) modelNum = 0;
 	if (key == GLFW_KEY_2 && action == GLFW_PRESS) modelNum = 1;
-	if (key == GLFW_KEY_3 && action == GLFW_PRESS) modelNum = 2;
+	if (key == GLFW_KEY_3 && action == GLFW_PRESS) modelNum = 2;*/
 
 	//Trasladar cubo
 	if (key == GLFW_KEY_UP && (action == GLFW_PRESS || action == GLFW_REPEAT)) traslationY += 0.1f;
