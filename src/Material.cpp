@@ -59,18 +59,18 @@ Material::~Material() {
 }
 
 void Material::SetMaterial(Shader *shad) {
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, TextDiff);
-	glUniform1i(glGetUniformLocation(shad.Program, "diffuse"), 0);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, TextSpec);
-	glUniform1i(glGetUniformLocation(shad.Program, "specular"), 1);
+	glUniform1i(glGetUniformLocation(shad->Program, "material.diffuse"), 0);
+	glUniform1i(glGetUniformLocation(shad->Program, "material.specular"), 1);
 }
 
 void Material::SetShininess(Shader *shad) {
-
+	glUniform1f(glGetUniformLocation(shad->Program, "material.shininess"), this->Shininess);
 }
 
 void Material::ActivateTextures() {
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, TextDiff);
 
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, TextSpec);
 }

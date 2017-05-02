@@ -15,6 +15,7 @@
 #include "Camera.h"
 //#include "Model.h"
 #include "Object.h"
+#include "Material.h"
 
 using namespace glm;
 using namespace std;
@@ -97,9 +98,11 @@ int main() {
 	glFrontFace(GL_CW);
 
 	//cargamos los shader
+	//Shader myShader = Shader("./src/PhongVertex.vertexshader", "./src/PhongFragment.fragmentshader");
 	//Shader myShader = Shader("./src/DirectionalVertex.vertexshader", "./src/DirectionalFragment.fragmentshader");
 	//Shader myShader = Shader("./src/PuntualVertex.vertexshader", "./src/PuntualFragment.fragmentshader");
-	Shader myShader = Shader("./src/FocalVertex.vertexshader", "./src/FocalFragment.fragmentshader");
+	//Shader myShader = Shader("./src/FocalVertex.vertexshader", "./src/FocalFragment.fragmentshader");
+	Shader myShader = Shader("./src/Phong2Vertex.vertexshader", "./src/Phong2Fragment.fragmentshader");
 	Shader myShader2 = Shader("./src/SimpleCubeVertex.vertexshader", "./src/SimpleCubeFragment.fragmentshader");
 
 	// Definir el buffer de vertices
@@ -262,7 +265,10 @@ int main() {
 	traslationY = cube1.GetPosition().y;
 
 	//cube2 = Object(vec3(0.1f), vec3(0.0f), vec3(-1.0f, 0.0f, 1.5f), Object::cube);
-	cube2 = Object(vec3(0.1f), vec3(0.0f), vec3(0.0f, 0.0f, 2.0f), Object::cube);
+	cube2 = Object(vec3(0.1f), vec3(0.0f), vec3(0.0f, 0.0f, 1.0f), Object::cube);
+
+	//Material
+	Material texMat = Material("./src/textures/difuso.png", "./src/textures/especular.png", 1.0f);
 
 	//Bloquear cursor a la ventana
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -286,6 +292,10 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glUniform1i(glGetUniformLocation(myShader.Program, "Texture2"), 1);
 		glUniform1f(glGetUniformLocation(myShader.Program, "textureChange"), textureChange);*/
+
+		texMat.ActivateTextures();
+		texMat.SetMaterial(&myShader);
+		texMat.SetShininess(&myShader);
 
 		myShader.USE();
 		proj = perspective(radians(myCamera.GetFOV()), aspectRatio, 0.1f, 100.0f);
