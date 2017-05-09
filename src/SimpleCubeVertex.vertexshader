@@ -11,11 +11,14 @@ uniform mat4 view;
 uniform mat4 proj;
 
 
+uniform vec3 col;
+
+
 void main(){
 
 	gl_Position = proj * view * matriz * vec4(position, 1.0);
 
-    vertexColor = vec3(1.0);
+    vertexColor = col;
 
 }
 

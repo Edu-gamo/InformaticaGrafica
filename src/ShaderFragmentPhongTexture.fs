@@ -1,7 +1,7 @@
 #version 330 core
 
-#define NUM_MAX_PLIGHTS 4
-#define NUM_MAX_SLIGHTS 4
+#define NUM_MAX_PLIGHTS 2
+#define NUM_MAX_SLIGHTS 1
 
 struct Material {
 	sampler2D diffuse;
@@ -56,7 +56,24 @@ vec3 PointLight(PLight light, vec3 Normal, vec3 viewDirection);
 vec3 SpotLight(SLight light, vec3 Normal, vec3 viewDirection);
 
 void main(){
+
+    vec3 norm = normalize(Normal);
+    vec3 viewDir = normalize(viewPos - FragPos);
 	
+	//Directional
+    vec3 result = DirectionalLight(dlight, norm, viewDir);
+	
+	//Puntual
+    for(int i = 0; i < NUM_MAX_PLIGHTS; i++){
+		result += PointLight(plight[i], norm, viewDir);
+	}
+    
+	//Focal
+    for(int i = 0; i < NUM_MAX_SLIGHTS; i++){
+        result += SpotLight(slight[i], norm, viewDir);
+	}
+    
+    color = vec4(result, 1.0);
 } 
 
 vec3 DirectionalLight(DLight light, vec3 Normal, vec3 viewDirection){
@@ -78,7 +95,7 @@ vec3 DirectionalLight(DLight light, vec3 Normal, vec3 viewDirection){
 }
 
 vec3 PointLight(PLight light, vec3 Normal, vec3 viewDirection){
-	vec3 lightDirection = normalize(light.position - fragPos);
+	vec3 lightDirection = normalize(light.position - FragPos);
 	
 	//Ambient
     vec3 ambient  = light.ambient * vec3(texture(material.diffuse, TexCoords));
@@ -93,7 +110,7 @@ vec3 PointLight(PLight light, vec3 Normal, vec3 viewDirection){
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
 	
     //Attenuation
-    float distance = length(light.position - fragPos);
+    float distance = length(light.position - FragPos);
     float attenuation = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     
 	ambient  *= attenuation;
@@ -104,7 +121,7 @@ vec3 PointLight(PLight light, vec3 Normal, vec3 viewDirection){
 }
 
 vec3 SpotLight(SLight light, vec3 Normal, vec3 viewDirection){
-	vec3 lightDirection = normalize(light.position - fragPos);
+	vec3 lightDirection = normalize(light.position - FragPos);
 	
 	//Ambient
     vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
@@ -119,7 +136,7 @@ vec3 SpotLight(SLight light, vec3 Normal, vec3 viewDirection){
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
     
 	//Attenuation
-    float distance = length(light.position - fragPos);
+    float distance = length(light.position - FragPos);
     float attenuation = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     
 	//Spotlight intensity

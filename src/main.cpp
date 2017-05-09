@@ -16,6 +16,7 @@
 //#include "Model.h"
 #include "Object.h"
 #include "Material.h"
+#include "Light.h"
 
 using namespace glm;
 using namespace std;
@@ -32,7 +33,7 @@ Camera myCamera;
 //Model model1, model2, model3;
 int modelNum = 0;
 
-Object cube1, cube2;
+Object cube1, cube2, cube3, cube4;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
@@ -102,7 +103,8 @@ int main() {
 	//Shader myShader = Shader("./src/DirectionalVertex.vertexshader", "./src/DirectionalFragment.fragmentshader");
 	//Shader myShader = Shader("./src/PuntualVertex.vertexshader", "./src/PuntualFragment.fragmentshader");
 	//Shader myShader = Shader("./src/FocalVertex.vertexshader", "./src/FocalFragment.fragmentshader");
-	Shader myShader = Shader("./src/Phong2Vertex.vertexshader", "./src/Phong2Fragment.fragmentshader");
+	//Shader myShader = Shader("./src/Phong2Vertex.vertexshader", "./src/Phong2Fragment.fragmentshader");
+	Shader myShader = Shader("./src/ShaderVertexPhongTexture.vs", "./src/ShaderFragmentPhongTexture.fs");
 	Shader myShader2 = Shader("./src/SimpleCubeVertex.vertexshader", "./src/SimpleCubeFragment.fragmentshader");
 
 	// Definir el buffer de vertices
@@ -266,9 +268,19 @@ int main() {
 
 	//cube2 = Object(vec3(0.1f), vec3(0.0f), vec3(-1.0f, 0.0f, 1.5f), Object::cube);
 	cube2 = Object(vec3(0.1f), vec3(0.0f), vec3(0.0f, 0.0f, 1.0f), Object::cube);
+	cube3 = Object(vec3(0.1f), vec3(0.0f), vec3(2.0f, 0.0f, 1.0f), Object::cube);
+	cube4 = Object(vec3(0.1f), vec3(0.0f), vec3(-2.0f, 0.0f, 1.0f), Object::cube);
 
 	//Material
 	Material texMat = Material("./src/textures/difuso.png", "./src/textures/especular.png", 1.0f);
+
+	//Luz
+	Light direccional = Light(vec3(0.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), Light::DIRECTIONAL, 0);
+
+	Light puntual1 = Light(cube2.GetPosition(), vec3(0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), Light::POINT, 0);
+	Light puntual2 = Light(cube3.GetPosition(), vec3(0.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), Light::POINT, 1);
+
+	Light focal1 = Light(cube4.GetPosition(), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f), Light::SPOT, 0);
 
 	//Bloquear cursor a la ventana
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -293,13 +305,14 @@ int main() {
 		glUniform1i(glGetUniformLocation(myShader.Program, "Texture2"), 1);
 		glUniform1f(glGetUniformLocation(myShader.Program, "textureChange"), textureChange);*/
 
+		myShader.USE();
+
 		texMat.ActivateTextures();
 		texMat.SetMaterial(&myShader);
 		texMat.SetShininess(&myShader);
 
-		myShader.USE();
 		proj = perspective(radians(myCamera.GetFOV()), aspectRatio, 0.1f, 100.0f);
-		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "proj"), 1, GL_FALSE, value_ptr(proj));
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "projection"), 1, GL_FALSE, value_ptr(proj));
 
 		//Camara
 		myCamera.DoMovement(window);
@@ -307,8 +320,8 @@ int main() {
 
 		cube1.Move(vec3(traslationX, traslationY, 0.0f));
 		cube1.Rotate(vec3(rotationX, rotationY, 0.0f));
-		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "matriz"), 1, GL_FALSE, value_ptr(cube1.GetModelMatrix()));
-		glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), cube2.GetPosition().x, cube2.GetPosition().y, cube2.GetPosition().z);
+		glUniformMatrix4fv(glGetUniformLocation(myShader.Program, "model"), 1, GL_FALSE, value_ptr(cube1.GetModelMatrix()));
+		/*glUniform3f(glGetUniformLocation(myShader.Program, "lightPos"), cube2.GetPosition().x, cube2.GetPosition().y, cube2.GetPosition().z);
 		vec3 lightDir = vec3(0.0f, 0.0f, -1.0f);
 		//vec3 lightDir = vec3(0.0f) - cube2.GetPosition();
 		glUniform3f(glGetUniformLocation(myShader.Program, "lightDir"), lightDir.x, lightDir.y, lightDir.z);
@@ -318,14 +331,36 @@ int main() {
 		float aperturaMin = cos(radians(10.0f));
 		glUniform1f(glGetUniformLocation(myShader.Program, "aperturaMax"), aperturaMax);
 		glUniform1f(glGetUniformLocation(myShader.Program, "aperturaMin"), aperturaMin);
-		glUniform3f(glGetUniformLocation(myShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);
+		glUniform3f(glGetUniformLocation(myShader.Program, "viewPos"), myCamera.cameraPos.x, myCamera.cameraPos.y, myCamera.cameraPos.z);*/
+		
+		direccional.SetLight(&myShader, myCamera.cameraPos);
+
+		puntual1.SetAtt(1.0f, 0.7f, 1.8f);
+		puntual1.SetLight(&myShader, myCamera.cameraPos);
+
+		puntual2.SetAtt(1.0f, 0.7f, 1.8f);
+		puntual2.SetLight(&myShader, myCamera.cameraPos);
+
+		focal1.SetAtt(1.0f, 0.7f, 1.8f);
+		focal1.SetAperture(radians(5.0f), radians(10.0f));
+		focal1.SetLight(&myShader, myCamera.cameraPos);
+
 		cube1.Draw();
 
 		myShader2.USE();
 		glUniformMatrix4fv(glGetUniformLocation(myShader2.Program, "proj"), 1, GL_FALSE, value_ptr(proj));
 		glUniformMatrix4fv(glGetUniformLocation(myShader2.Program, "view"), 1, GL_FALSE, value_ptr(myCamera.LookAt()));
 		glUniformMatrix4fv(glGetUniformLocation(myShader2.Program, "matriz"), 1, GL_FALSE, value_ptr(cube2.GetModelMatrix()));
+		glUniform3f(glGetUniformLocation(myShader2.Program, "col"), puntual1.GetColor().x, puntual1.GetColor().y, puntual1.GetColor().z);
 		cube2.Draw();
+
+		glUniform3f(glGetUniformLocation(myShader2.Program, "col"), puntual2.GetColor().x, puntual2.GetColor().y, puntual2.GetColor().z);
+		glUniformMatrix4fv(glGetUniformLocation(myShader2.Program, "matriz"), 1, GL_FALSE, value_ptr(cube3.GetModelMatrix()));
+		cube3.Draw();
+
+		glUniform3f(glGetUniformLocation(myShader2.Program, "col"), focal1.GetColor().x, focal1.GetColor().y, focal1.GetColor().z);
+		glUniformMatrix4fv(glGetUniformLocation(myShader2.Program, "matriz"), 1, GL_FALSE, value_ptr(cube4.GetModelMatrix()));
+		cube4.Draw();
 
 		/*if (modelNum == 0) {
 			mat4 model = GenerateModelMatrix(vec3(0.25f), vec3(0.0f), vec3(0.0f));
